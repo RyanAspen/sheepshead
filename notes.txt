@@ -1,0 +1,40 @@
+https://pettingzoo.farama.org/environments/classic/gin_rummy/#usage
+
+Action Space:
+
+Discrete(70)
+
+0 - pass
+1 - pick
+2 - declare go alone
+3 - declare ace clubs
+4 - declare ace spaces
+5 - declare ace hearts
+6-37 - bury card
+38-69 - play card
+
+Observation Space:
+
+7x32 MultiBinary with
+
+Row Index:
+0 -> Current Hand
+1 -> Current Cards Taken
+2 -> Opponent 1's Known Cards Taken
+3 -> Opponent 2's Known Cards Taken
+4 -> Opponent 3's Known Cards Taken
+5 -> Opponent 4's Known Cards Taken
+6 -> Unknown Cards
+
+Column Index:
+Each Card
+
+Along with 4 optional Discrete(32) for the current trick.
+And a Discrete(4) for called suit.
+
+            Action 0 - "Pass"
+            
+            Action 2 - Declare "Go Alone"
+            Action 3 - Declare "Ace of Clubs"
+            Action 4 - Declare "Ace of Spades"
+            Action 5 - Declare "Ace of Hearts"

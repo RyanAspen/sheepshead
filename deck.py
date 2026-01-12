@@ -1,14 +1,14 @@
 """
 Class which manages the deck.
 """
-
+from gymnasium.utils import seeding
 import numpy as np
 
 class Deck:
-    def __init__(self):
+    def __init__(self, np_random : seeding.RandomNumberGenerator):
         # 32 cards in a sheepshead deck
-        self.rng = np.random.default_rng()
-        self.deck = np.arange(len(self.card_ids))
+        self.rng = np_random
+        self.deck = np.arange(32)
     
     def shuffle(self):
         self.rng.shuffle(self.deck)
