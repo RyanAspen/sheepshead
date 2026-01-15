@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 from typing import Dict, List
-from suit import Suit
+from sheepshead.suit import Suit
 
 card_ids : List[str] = ["7H","7D","7C","7S","8H","8D","8C","8S","9H","9D","9C","9S","KH","KD","KC","KS","10H","10D","10C","10S","AH","AD","AC","AS","JH","JD","JC","JS","QH","QD","QC","QS"]
 card_suits : List[Suit] = [
@@ -39,7 +39,7 @@ card_suits : List[Suit] = [
     Suit.TRUMP
 ]
 
-card_suit_masks : Dict[NDArray[np.bool]] = {
+card_suit_masks : Dict[Suit, NDArray[np.bool]] = {
     Suit.CLUB : np.array([0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0], dtype=np.bool),
     Suit.SPADE : np.array([0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0], dtype=np.bool),
     Suit.HEART : np.array([1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0], dtype=np.bool),
@@ -62,7 +62,7 @@ aces : Dict[Suit, int] = {
     Suit.TRUMP : 21
 }
 
-ace_masks : Dict[NDArray[np.bool]] = {
+ace_masks : Dict[Suit, NDArray[np.bool]] = {
     Suit.CLUB : np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0], dtype=np.bool),
     Suit.SPADE : np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0], dtype=np.bool),
     Suit.HEART : np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0], dtype=np.bool),

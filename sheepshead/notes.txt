@@ -15,7 +15,7 @@ Discrete(70)
 
 Observation Space:
 
-7x32 MultiBinary with
+13x32 MultiBinary with
 
 Row Index:
 0 -> Current Hand
@@ -24,7 +24,13 @@ Row Index:
 3 -> Opponent 2's Known Cards Taken
 4 -> Opponent 3's Known Cards Taken
 5 -> Opponent 4's Known Cards Taken
-6 -> Unknown Cards
+6 -> My card played for current trick
+7 -> Opponent 1's card for current trick
+8 -> Opponent 2's card for current trick
+9 -> Opponent 3's card for current trick
+10 -> Opponent 4's card for current trick
+11 -> Unknown Cards
+12 -> Current Suit
 
 Column Index:
 Each Card

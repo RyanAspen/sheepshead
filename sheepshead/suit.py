@@ -5,3 +5,4 @@ class Suit(Enum):
     SPADE = 2
     HEART = 3
     TRUMP = 4
+    NO_SUIT = 5

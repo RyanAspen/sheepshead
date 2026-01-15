@@ -1,25 +1,21 @@
 from pettingzoo import AECEnv
 from pettingzoo.utils import wrappers
 import functools
-from gymnasium.spaces import Sequence, Discrete, MultiBinary, Dict
+from gymnasium.spaces import Discrete, MultiBinary, Dict, Box
 from gymnasium.utils import seeding
-import card_constants
-from hand import Hand
-from deck import Deck
-from suit import Suit
+import sheepshead.card_constants as card_constants
+from sheepshead.hand import Hand
+from sheepshead.deck import Deck
+from sheepshead.suit import Suit
 import numpy as np
 
+
 def env(render_mode=None):
-    """
-    The env function often wraps the environment in wrappers by default.
-    You can find full documentation for these methods
-    elsewhere in the developer documentation.
-    """
     internal_render_mode = render_mode if render_mode != "ansi" else "human"
     env = raw_env(render_mode=internal_render_mode)
     # This wrapper is only for environments which print results to the terminal
-    if render_mode == "ansi":
-        env = wrappers.CaptureStdoutWrapper(env)
+    #if render_mode == "ansi":
+    #    env = wrappers.CaptureStdoutWrapper(env)
     # this wrapper helps error handling for discrete action spaces
     env = wrappers.AssertOutOfBoundsWrapper(env)
     # Provides a wide vareity of helpful user errors
@@ -27,8 +23,9 @@ def env(render_mode=None):
     env = wrappers.OrderEnforcingWrapper(env)
     return env
 
+
 class raw_env(AECEnv):
-    metadata = {"render_modes" : ["human"], "name" : "sheepshead"}
+    metadata = {"render_modes" : ["human"], "name" : "sheepshead_v1"}
 
     def __init__(self, render_mode=None):
         # Define possible_agents and render_mode
@@ -109,7 +106,7 @@ class raw_env(AECEnv):
 
         self.won_a_trick[winning_player] = True
         self.tricks_played += 1
-        self.scores[winning_player] += sum([card_constants.card_points[idx] for idx in self.current_trick])
+        self.scores[winning_player] += sum([card_constants.card_points[idx] for idx in self.current_trick.values()])
         for _, card_idx in self.current_trick.items():
             self.cards_taken[winning_player][card_idx] = 1
         self.leading_player = winning_player
@@ -208,7 +205,6 @@ class raw_env(AECEnv):
                 self.rewards[self.picker] = 6
                 self.rewards[self.partner] = 3
 
-    # TODO
     def observe(self, agent):
         # Return dictionary with observation and action mask
         """
@@ -227,7 +223,7 @@ class raw_env(AECEnv):
         Called Suit:
         - Just an index for suit
         """
-        board_state = np.zeros((7,32), np.int8)
+        board_state = np.zeros((13,32), np.int8)
         board_state[0] = self.hands[agent].get_hand_mask()
         if self.picker == agent:
             board_state[1] = self.cards_taken[agent] + self.cards_buried
@@ -241,33 +237,51 @@ class raw_env(AECEnv):
         board_state[4] = self.cards_taken[opponent3]
         opponent4 = self._normal_agent_step_sim(opponent3)
         board_state[5] = self.cards_taken[opponent4]
-        board_state[6] = np.logical_not(np.logical_or(board_state[0], np.logical_or(board_state[1], np.logical_or(board_state[2], np.logical_or(board_state[3], np.logical_or(board_state[4], board_state[5])))))).astype(np.int8)
-
-        trick_as_list = []
-        if len(self.current_trick) > 0:
-            trick_as_list.append(self.current_trick[self.leading_player])
-            curr_player = self.leading_player
-            i = 1
-            while len(self.current_trick) > i:
-                curr_player = self._normal_agent_step_sim(curr_player)
-                trick_as_list.append(self.current_trick[curr_player])
-                i += 1
-        current_trick = tuple(trick_as_list)
-
-        if self.called_ace == Suit.CLUB:
-            called_suit = 0
-        elif self.called_ace == Suit.SPADE:
-            called_suit = 1
-        elif self.called_ace == Suit.HEART:
-            called_suit = 2
+        if agent in self.current_trick:
+            card_idx = self.current_trick[agent]
+            board_state[6][card_idx] = 1
+        if opponent1 in self.current_trick:
+            card_idx = self.current_trick[opponent1]
+            board_state[7][card_idx] = 1
+        if opponent2 in self.current_trick:
+            card_idx = self.current_trick[opponent2]
+            board_state[8][card_idx] = 1
+        if opponent3 in self.current_trick:
+            card_idx = self.current_trick[opponent3]
+            board_state[9][card_idx] = 1
+        if opponent4 in self.current_trick:
+            card_idx = self.current_trick[opponent4]
+            board_state[10][card_idx] = 1
+        board_state[11] = np.logical_not(np.logical_or.reduce(board_state[:11])).astype(np.int8)
+        if not (self.called_ace is None):
+            board_state[12][self.called_ace.value] = 1
+            
+        action_mask = np.zeros(70, dtype=np.int8)
+        if self.game_phase == "BIDDING":
+            action_mask[0] = 1
+            action_mask[1] = 1
+        elif self.game_phase == "PARTNER_DECLARE":
+            aces = self.hands[agent].get_legal_called_aces()
+            action_mask[2] = 1
+            if Suit.CLUB in aces:
+                action_mask[3] = 1
+            if Suit.SPADE in aces:
+                action_mask[4] = 1
+            if Suit.HEART in aces:
+                action_mask[5] = 1
+        elif self.game_phase == "BURYING":
+            legal_cards_to_bury = self.hands[agent].get_legal_cards_to_bury(self.called_ace)
+            action_mask[6:38] = legal_cards_to_bury
         else:
-            called_suit = 3
+            legal_cards_to_play = self.hands[agent].get_legal_cards_to_play(self._get_led_suit(), self.called_ace)
+            action_mask[38:] = legal_cards_to_play
 
-        observation = {}
-        observation["Board State"] = board_state
-        observation["Current Trick"] = current_trick
-        observation["Called Suit"] = called_suit
- 
+        observation = {
+            "observation" : board_state,
+            "action_mask" : action_mask
+        }
+        return observation
+
     def close(self):
         # End extra displays
         pass
@@ -283,8 +297,7 @@ class raw_env(AECEnv):
             - infos
             - agent_selection
         """
-        if seed is not None:
-            self.np_random, self.np_random_seed = seeding.np_random(seed)
+        self.np_random, self.np_random_seed = seeding.np_random(seed)
         self.agents = self.possible_agents[:]
         self.rewards = {agent: 0 for agent in self.agents}
         self._cumulative_rewards = {agent: 0 for agent in self.agents}
@@ -319,16 +332,15 @@ class raw_env(AECEnv):
         self.tricks_played = 0
 
     # TODO May need to be increased
-    @functools.lru_cache(maxsize=None)
     def observation_space(self, agent):
         # Return observation space
-        return Dict(spaces={
-            "Board State" : MultiBinary([7,32]),
-            "Current Trick" : Sequence(Discrete(32)),
-            "Called Suit" : Discrete(4)
-        })
+        return Dict(
+            {
+                "observation": MultiBinary([13,32]),
+                "action_mask" : Box(low=0, high=1, shape=(70,), dtype=np.int8)
+            }
+        )
 
-    @functools.lru_cache(maxsize=None)
     def action_space(self, agent):
         # Return action space
         return Discrete(70)
@@ -451,6 +463,10 @@ class raw_env(AECEnv):
                             self._score_game()
                             for a in self.agents:
                                 self.terminations[a] = True
+                        else:
+                            self.agent_selection = self.leading_player
+                    else:
+                        self._normal_agent_step()
                 else:
                     self._invalid_action(agent)
             else:
