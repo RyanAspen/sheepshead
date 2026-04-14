@@ -1,6 +1,6 @@
 import sheepshead_v1
 from pettingzoo.test import api_test, performance_benchmark
-
+import time
 """
 if __name__ == "__main__":
     my_env = sheepshead_v1.env()
@@ -8,7 +8,7 @@ if __name__ == "__main__":
     performance_benchmark(my_env)
 
 """
-env = sheepshead_v1.env()
+env = sheepshead_v1.env(render_mode="str")
 env.reset(seed=42)
 while len(env.agents) > 0:
     agent = env.agent_selection
@@ -20,5 +20,6 @@ while len(env.agents) > 0:
         action = env.action_space(agent).sample(mask)
     print(agent, action)
     env.step(action)
+    time.sleep(1)
 
 # https://pettingzoo.farama.org/tutorials/sb3/connect_four/

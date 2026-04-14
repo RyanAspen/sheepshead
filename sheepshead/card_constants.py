@@ -2,8 +2,43 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import Dict, List
 from sheepshead.suit import Suit
+import pygame
 
 card_ids : List[str] = ["7H","7D","7C","7S","8H","8D","8C","8S","9H","9D","9C","9S","KH","KD","KC","KS","10H","10D","10C","10S","AH","AD","AC","AS","JH","JD","JC","JS","QH","QD","QC","QS"]
+card_image_paths : List[str] = [
+    "7_of_hearts.png",
+    "7_of_diamonds.png",
+    "7_of_clubs.png",
+    "7_of_spades.png",
+    "8_of_hearts.png",
+    "8_of_diamonds.png",
+    "8_of_clubs.png",
+    "8_of_spades.png",
+    "9_of_hearts.png",
+    "9_of_diamonds.png",
+    "9_of_clubs.png",
+    "9_of_spades.png",
+    "king_of_hearts.png",
+    "king_of_diamonds.png",
+    "king_of_clubs.png",
+    "king_of_spades.png",
+    "10_of_hearts.png",
+    "10_of_diamonds.png",
+    "10_of_clubs.png",
+    "10_of_spades.png",
+    "ace_of_hearts.png",
+    "ace_of_diamonds.png",
+    "ace_of_clubs.png",
+    "ace_of_spades.png",
+    "jack_of_hearts.png",
+    "jack_of_diamonds.png",
+    "jack_of_clubs.png",
+    "jack_of_spades.png",
+    "queen_of_hearts.png",
+    "queen_of_diamonds.png",
+    "queen_of_clubs.png",
+    "queen_of_spades.png",
+]
 card_suits : List[Suit] = [
     Suit.HEART,
     Suit.TRUMP, 
@@ -67,5 +102,4 @@ ace_masks : Dict[Suit, NDArray[np.bool]] = {
     Suit.SPADE : np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0], dtype=np.bool),
     Suit.HEART : np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0], dtype=np.bool),
     Suit.TRUMP : np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0], dtype=np.bool)
-
 }

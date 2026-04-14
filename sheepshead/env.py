@@ -4,14 +4,17 @@ import functools
 from gymnasium.spaces import Discrete, MultiBinary, Dict, Box
 from gymnasium.utils import seeding
 import sheepshead.card_constants as card_constants
+from sheepshead.game_screen import GameScreen
 from sheepshead.hand import Hand
 from sheepshead.deck import Deck
 from sheepshead.suit import Suit
 import numpy as np
+import pygame
+
 
 
 def env(render_mode=None):
-    internal_render_mode = render_mode if render_mode != "ansi" else "human"
+    internal_render_mode = render_mode if render_mode is not None else "human"
     env = raw_env(render_mode=internal_render_mode)
     # This wrapper is only for environments which print results to the terminal
     #if render_mode == "ansi":
@@ -25,12 +28,16 @@ def env(render_mode=None):
 
 
 class raw_env(AECEnv):
-    metadata = {"render_modes" : ["human"], "name" : "sheepshead_v1"}
+    metadata = {"render_modes" : ["human", "str"], "name" : "sheepshead_v1"}
 
     def __init__(self, render_mode=None):
         # Define possible_agents and render_mode
         self.possible_agents = ["player_" + str(r) for r in range(5)]
         self.render_mode = render_mode
+        self.screen : GameScreen = GameScreen(render_mode)
+
+        if self.render_mode == "human":
+            self.clock = pygame.time.Clock()
 
     def _invalid_action(self, agent):
         """
@@ -331,6 +338,16 @@ class raw_env(AECEnv):
         self.leaster_blind_points = 0
         self.tricks_played = 0
 
+        self.screen.reset()
+
+    def render(self):
+        cards_this_trick : list[int] = list(self.current_trick.values())
+        cards_in_hand : list[int] = self.hands[self.agent_selection].get_cards_list()
+        if self.render_mode == "human":
+            self.screen.render(cards_this_trick, cards_in_hand)
+        else:
+            self.screen.print(self.agent_selection, cards_this_trick, cards_in_hand)
+
     # TODO May need to be increased
     def observation_space(self, agent):
         # Return observation space
@@ -473,4 +490,7 @@ class raw_env(AECEnv):
                 self._invalid_action(agent)
 
         self._accumulate_rewards()
+
+        self.render()
+
 

@@ -32,6 +32,9 @@ class Hand:
     def get_hand_mask(self) -> NDArray[np.int8]:
         return self.cards
 
+    def get_cards_list(self) -> list[int]:
+        return np.nonzero(self.cards)[0].tolist()
+
     def add_card(self, card_int : int):
         self.suit_counts[card_constants.card_suits[card_int]] += 1
         self.cards[card_int] = 1
